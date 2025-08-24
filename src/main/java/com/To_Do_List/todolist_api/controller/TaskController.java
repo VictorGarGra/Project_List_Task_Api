@@ -15,7 +15,7 @@ import java.util.Optional;
  */
 @RestController // Marca esta clase como un controlador REST
 @RequestMapping("/api/tasks")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 public class TaskController {
 
     @Autowired // Inyecta automáticamente una instancia de TaskRepository
