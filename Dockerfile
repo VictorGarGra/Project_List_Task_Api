@@ -1,4 +1,4 @@
-# --- Etapa 1: La Construcción (El Taller 🔧) ---
+# --- Etapa 1: La Construcción (El Taller ) ---
 # Aquí es donde compilamos nuestro código Java en un archivo .jar.
 # Usamos una imagen base que ya tiene Java 17 y herramientas de compilación.
 FROM eclipse-temurin:17-jdk-jammy AS build
@@ -34,4 +34,5 @@ COPY --from=build /workspace/app/target/*.jar app.jar
 EXPOSE 8080
 
 # Este es el comando final que se ejecuta para iniciar la aplicación.
-ENTRYPOINT ["java","-jar","app.jar"]
+# Cambia la última línea por esta:
+ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=${PORT:-8080}"]
