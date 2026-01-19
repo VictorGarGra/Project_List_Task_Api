@@ -1,39 +1,30 @@
 # --- Etapa 1: La Construcción (El Taller ) ---
-# Aquí es donde compilamos nuestro código Java en un archivo .jar.
-# Usamos una imagen base que ya tiene Java 17 y herramientas de compilación.
 FROM eclipse-temurin:17-jdk-jammy AS build
 
-# Establecemos el directorio de trabajo dentro del contenedor.
+# Establecemos el directorio de trabajo
 WORKDIR /workspace/app
 
-# Copiamos solo los archivos de Maven para descargar las dependencias primero.
-# Esto es un truco de caché: si las dependencias no cambian, Docker no las vuelve a descargar.
-RUN chmod +x mvnw
+# 1. PRIMERO copiamos el archivo mvnw
 COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
+
+# 2. DESPUÉS le damos permisos (ahora que ya existe en el contenedor)
+RUN chmod +x mvnw
+
+# Descargamos dependencias
 RUN ./mvnw dependency:go-offline
 
-# Ahora copiamos el resto del código fuente.
+# Copiamos el código y compilamos
 COPY src src
-
-# Compilamos la aplicación y creamos el archivo .jar.
-# -DskipTests omite la ejecución de pruebas para acelerar la construcción.
 RUN ./mvnw package -DskipTests
 
-
-# --- Etapa 2: La Ejecución (El Escenario 🚀) ---
-# Aquí es donde ejecutamos la aplicación ya compilada.
-# Usamos una imagen mucho más ligera que solo tiene lo necesario para ejecutar Java.
+# --- Etapa 2: La Ejecución (El Escenario ) ---
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /workspace/app
 
-# Copiamos únicamente el archivo .jar que se creó en la etapa de construcción.
+# Copiamos el JAR generado
 COPY --from=build /workspace/app/target/*.jar app.jar
 
-# Le decimos a Docker que nuestra aplicación escuchará en el puerto 8080.
-EXPOSE 8080
-
-# Este es el comando final que se ejecuta para iniciar la aplicación.
-# Cambia la última línea por esta:
+# Google Cloud Run usa la variable $PORT, así que la inyectamos al arrancar
 ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=${PORT:-8080}"]
