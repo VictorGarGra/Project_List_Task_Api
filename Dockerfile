@@ -8,6 +8,7 @@ WORKDIR /workspace/app
 
 # Copiamos solo los archivos de Maven para descargar las dependencias primero.
 # Esto es un truco de caché: si las dependencias no cambian, Docker no las vuelve a descargar.
+RUN chmod +x mvnw
 COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
